@@ -3,507 +3,751 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anticipation Engine — Interactive Discounts for Shopify</title>
-<meta name="description" content="Replace static coupons with an interactive discount experience. Shoppers earn their own discount — you give away less and convert more.">
+<title>Luca — Your Dog's Secretary</title>
+<meta name="description" content="Luca learns what your dog needs — food, treats, toys, supplements, grooming — finds the best price across every retailer, and builds your cart. So you don't have to.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500;1,9..144,700&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+/* ============================================
+   RESET + TOKENS
+   ============================================ */
+:root {
+  --sage-50: #F0F4EC; --sage-100: #DCE6D2; --sage-200: #B9CDA6;
+  --sage-300: #8FB072; --sage-400: #6A9447; --sage-500: #4E7A2E;
+  --sage-600: #3F6324; --sage-700: #314D1C; --sage-800: #243814;
+  --sage-900: #17240D;
 
-:root{
-  --navy-deep:#0b1023;
-  --navy:#0f1629;
-  --navy-light:#151d38;
-  --navy-card:#131a33;
-  --cyan:#22d3ee;
-  --teal:#2dd4a8;
-  --green:#34d399;
-  --green-bright:#4ade80;
-  --gradient:linear-gradient(135deg,#22d3ee,#2dd4a8,#4ade80);
-  --gradient-h:linear-gradient(90deg,#22d3ee,#2dd4a8,#4ade80);
-  --white:#f0f4f8;
-  --white-pure:#ffffff;
-  --gray-100:#c9d1d9;
-  --gray-200:#8b949e;
-  --gray-300:#6e7681;
-  --glow-cyan:0 0 40px rgba(34,211,238,0.15);
-  --font-main:'Sora',system-ui,sans-serif;
-  --font-mono:'IBM Plex Mono',monospace;
+  --amber-50: #FEF7E8; --amber-100: #FDECC6; --amber-300: #F6C94E;
+  --amber-500: #D4A017; --amber-600: #B38614;
+
+  --coral-50: #FDF1EE; --coral-100: #FADDD5; --coral-400: #E57A62;
+  --coral-500: #D65A3E;
+
+  --cream: #FAF8F4; --cream-dark: #F3F0E8;
+  --ink: #1B1A17; --ink-light: #3D3B35; --ink-muted: #6B6860;
+  --ink-faint: #A09D94; --ink-ghost: #CBC8BF;
+  --white: #FEFDFB;
+
+  --ff-display: 'Fraunces', Georgia, serif;
+  --ff-body: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-body{
-  background:var(--navy-deep);color:var(--gray-100);
-  font-family:var(--font-main);line-height:1.65;
-  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-body); background: var(--cream);
+  color: var(--ink); -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+/* Grain overlay */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
 }
 
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:0.85rem 2.5rem;display:flex;justify-content:space-between;align-items:center;
-  background:rgba(11,16,35,0.85);backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(34,211,238,0.08);
-}
-.logo{display:flex;align-items:center;gap:0.65rem;text-decoration:none;}
-.logo img{height:32px;width:32px;border-radius:7px;}
-.logo-text{font-weight:700;font-size:1rem;letter-spacing:-0.02em;}
-.logo-text span:first-child{color:var(--white-pure);}
-.logo-text span:last-child{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* ============================================
+   UTILITY
+   ============================================ */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+.wrap--narrow { max-width: 760px; }
+.wrap--mid { max-width: 960px; }
 
-.nav-links{display:flex;gap:1.75rem;align-items:center;}
-.nav-links a{font-size:0.82rem;font-weight:500;color:var(--gray-200);text-decoration:none;transition:color 0.2s;}
-.nav-links a:hover{color:var(--white-pure);}
-.nav-cta-wrap a{
-  padding:0.5rem 1.2rem;border-radius:8px;font-weight:600;font-size:0.82rem;
-  background:var(--gradient);color:var(--navy-deep)!important;
-  text-decoration:none;transition:opacity 0.2s,transform 0.2s;display:inline-block;
-}
-.nav-cta-wrap a:hover{opacity:0.9;transform:translateY(-1px);}
-.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:0.5rem;color:var(--gray-200);}
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo); }
+.reveal.show { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
 
-/* HERO */
-.hero{
-  min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
-  text-align:center;padding:8rem 2rem 5rem;position:relative;
-}
-.hero::before{content:'';position:absolute;top:5%;left:15%;width:500px;height:500px;background:radial-gradient(circle,rgba(34,211,238,0.07),transparent 65%);pointer-events:none;}
-.hero::after{content:'';position:absolute;bottom:10%;right:10%;width:450px;height:450px;background:radial-gradient(circle,rgba(52,211,153,0.06),transparent 65%);pointer-events:none;}
+/* ============================================
+   NAV
+   ============================================ */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 0; transition: all 0.5s var(--ease-out-expo); }
+.nav.stuck { background: rgba(250,248,244,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.nav__inner { display: flex; justify-content: space-between; align-items: center; }
+.nav__mark { font-family: var(--ff-display); font-size: 28px; font-weight: 500; color: var(--sage-700); text-decoration: none; letter-spacing: -0.04em; }
+.nav__mark i { color: var(--sage-400); }
+.nav__links { display: flex; align-items: center; gap: 36px; list-style: none; }
+.nav__links a { font-size: 14px; font-weight: 500; color: var(--ink-muted); text-decoration: none; transition: color 0.2s; }
+.nav__links a:hover { color: var(--ink); }
+.nav__btn { display: inline-block; background: var(--ink); color: var(--cream) !important; padding: 11px 26px; border-radius: 99px; font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0.02em; transition: all 0.3s var(--ease-out-expo) !important; }
+.nav__btn:hover { background: var(--sage-600) !important; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(78,122,46,0.2); }
 
-.hero-logo{width:80px;height:80px;border-radius:18px;margin-bottom:2rem;box-shadow:var(--glow-cyan);animation:fadeUp 0.7s ease both;}
-.hero h1{
-  font-size:clamp(2.4rem,6vw,4.2rem);font-weight:800;line-height:1.08;letter-spacing:-0.04em;
-  max-width:820px;margin-bottom:1.25rem;animation:fadeUp 0.7s ease 0.08s both;
-}
-.hero h1,.hero h1 span:not(.grad){color:var(--white-pure);}
-.grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{font-size:clamp(1rem,1.8vw,1.18rem);color:var(--gray-200);max-width:560px;margin:0 auto 2.5rem;font-weight:400;animation:fadeUp 0.7s ease 0.16s both;}
-.hero-actions{display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;animation:fadeUp 0.7s ease 0.24s both;}
+@media(max-width:768px) { .nav__links { display: none; } }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+/* ============================================
+   HERO — asymmetric, editorial
+   ============================================ */
+.hero { padding: 160px 0 100px; position: relative; }
+.hero__grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end; }
 
-.btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 1.8rem;border-radius:10px;font-family:var(--font-main);font-weight:600;font-size:0.92rem;text-decoration:none;border:none;cursor:pointer;transition:all 0.25s;}
-.btn-grad{background:var(--gradient);color:var(--navy-deep);box-shadow:0 2px 16px rgba(34,211,238,0.2);}
-.btn-grad:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(34,211,238,0.3);}
-.btn-ghost{background:rgba(255,255,255,0.05);color:var(--white-pure);border:1px solid rgba(255,255,255,0.1);}
-.btn-ghost:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);}
+.hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--sage-600); margin-bottom: 24px;
+  opacity: 0; animation: fadeIn 0.8s 0.3s var(--ease-out-expo) forwards;
+}
+.hero__eyebrow::before { content: ''; width: 8px; height: 8px; background: var(--sage-400); border-radius: 50%; animation: blink 2.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-section{padding:6rem 2rem;}
-.container{max-width:1080px;margin:0 auto;}
+.hero h1 {
+  font-family: var(--ff-display); font-weight: 600;
+  font-size: clamp(48px, 6vw, 76px); line-height: 1.05;
+  letter-spacing: -0.03em; color: var(--ink);
+  margin-bottom: 28px;
+  opacity: 0; animation: slideUp 1s 0.45s var(--ease-out-expo) forwards;
+}
+.hero h1 em { font-weight: 700; font-style: italic; color: var(--sage-500); }
 
-.section-tag{
-  display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.85rem;border-radius:100px;
-  font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
-  border:1px solid rgba(34,211,238,0.2);color:var(--cyan);background:rgba(34,211,238,0.05);margin-bottom:1rem;
-}
-.section-title{font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;letter-spacing:-0.03em;line-height:1.12;color:var(--white-pure);margin-bottom:0.6rem;}
-.section-desc{font-size:1.02rem;color:var(--gray-200);max-width:540px;line-height:1.65;}
-.section-header{text-align:center;margin-bottom:3.5rem;}
-.section-header .section-desc{margin:0 auto;}
-
-/* VALUE STRIP */
-.value-strip{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
-  background:rgba(255,255,255,0.04);border-radius:16px;overflow:hidden;
-  border:1px solid rgba(255,255,255,0.06);margin-top:-3rem;position:relative;z-index:2;
-}
-.value-item{padding:2rem 1.75rem;background:var(--navy);text-align:center;transition:background 0.3s;}
-.value-item:hover{background:var(--navy-light);}
-.value-num{font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.35rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.value-label{font-size:0.85rem;color:var(--gray-200);font-weight:500;}
-
-/* VIDEO */
-#video{background:var(--navy);}
-.video-frame{
-  max-width:840px;margin:0 auto;border-radius:16px;overflow:hidden;
-  border:1px solid rgba(255,255,255,0.06);box-shadow:var(--glow-cyan);
-  aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
-  background:var(--navy-deep);position:relative;
-}
-.video-frame::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(34,211,238,0.04),transparent 70%);}
-.video-placeholder{text-align:center;color:var(--gray-300);z-index:1;}
-.video-placeholder p{font-size:0.85rem;font-weight:500;margin-top:0.5rem;}
-
-/* HOW IT WORKS */
-.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
-.how-card{
-  background:var(--navy-card);border:1px solid rgba(255,255,255,0.05);
-  border-radius:14px;padding:2rem 1.5rem;position:relative;overflow:hidden;
-  transition:border-color 0.3s,transform 0.3s;
-}
-.how-card:hover{border-color:rgba(34,211,238,0.2);transform:translateY(-3px);}
-.how-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gradient-h);opacity:0;transition:opacity 0.3s;}
-.how-card:hover::before{opacity:1;}
-.how-num{
-  font-family:var(--font-mono);font-size:0.72rem;font-weight:500;color:var(--cyan);
-  padding:0.25rem 0.6rem;border:1px solid rgba(34,211,238,0.2);border-radius:6px;
-  display:inline-block;margin-bottom:1.1rem;background:rgba(34,211,238,0.05);
-}
-.how-card h3{font-size:1.05rem;font-weight:700;color:var(--white-pure);margin-bottom:0.5rem;}
-.how-card p{font-size:0.88rem;color:var(--gray-200);line-height:1.65;}
-
-/* BENEFITS */
-#benefits{background:var(--navy);}
-.benefits-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;}
-.benefit-card{
-  background:var(--navy-deep);border:1px solid rgba(255,255,255,0.05);
-  border-radius:14px;padding:1.75rem;transition:border-color 0.3s,transform 0.3s;
-}
-.benefit-card:hover{border-color:rgba(34,211,238,0.15);transform:translateY(-2px);}
-.benefit-icon{
-  width:40px;height:40px;border-radius:10px;background:rgba(34,211,238,0.08);
-  display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.1rem;
-}
-.benefit-card h3{font-size:0.98rem;font-weight:700;color:var(--white-pure);margin-bottom:0.4rem;}
-.benefit-card p{font-size:0.87rem;color:var(--gray-200);line-height:1.6;}
-
-.proof-banner{
-  margin-top:3rem;padding:1.5rem 2rem;border-radius:14px;
-  border:1px solid rgba(52,211,153,0.15);background:rgba(52,211,153,0.04);
-}
-.proof-banner p{font-size:0.92rem;color:var(--gray-100);line-height:1.6;}
-.proof-banner strong{color:var(--green);}
-
-/* SETUP */
-.setup-steps{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start;}
-.setup-left h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:var(--white-pure);letter-spacing:-0.03em;line-height:1.15;margin-bottom:0.75rem;}
-.setup-left p{font-size:0.95rem;color:var(--gray-200);margin-bottom:1.5rem;}
-.setup-list{list-style:none;counter-reset:setup;}
-.setup-list li{
-  counter-increment:setup;position:relative;padding:0.9rem 0 0.9rem 3.2rem;
-  border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.9rem;color:var(--gray-100);line-height:1.55;
-}
-.setup-list li::before{
-  content:counter(setup);position:absolute;left:0;top:0.85rem;
-  width:28px;height:28px;border-radius:8px;background:rgba(34,211,238,0.08);
-  border:1px solid rgba(34,211,238,0.15);color:var(--cyan);font-size:0.75rem;
-  font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);
-}
-.setup-list li strong{color:var(--white-pure);}
-
-.setup-right{background:var(--navy-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:2rem;}
-.setup-right h4{font-size:0.72rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:1.25rem;}
-.config-item{margin-bottom:1.25rem;}
-.config-item:last-child{margin-bottom:0;}
-.config-label{font-size:0.82rem;font-weight:600;color:var(--white-pure);margin-bottom:0.25rem;}
-.config-desc{font-size:0.8rem;color:var(--gray-300);line-height:1.55;}
-.config-example{
-  margin-top:0.5rem;font-family:var(--font-mono);font-size:0.78rem;color:var(--teal);
-  padding:0.4rem 0.75rem;background:rgba(34,211,238,0.05);border-radius:6px;
-  border:1px solid rgba(34,211,238,0.1);display:inline-block;
+.hero__sub {
+  font-size: 18px; line-height: 1.7; color: var(--ink-muted);
+  max-width: 420px; margin-bottom: 44px;
+  opacity: 0; animation: slideUp 1s 0.6s var(--ease-out-expo) forwards;
 }
 
-/* DOCS */
-#docs{background:var(--navy);}
-.docs-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
-.doc-link{
-  display:block;padding:1.5rem;background:var(--navy-card);
-  border:1px solid rgba(255,255,255,0.05);border-radius:12px;
-  text-decoration:none;transition:border-color 0.3s,transform 0.3s;
+@keyframes fadeIn { to { opacity: 1; } }
+@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+.hero h1, .hero__sub { transform: translateY(40px); }
+
+/* Email form */
+.email-form {
+  display: flex; gap: 10px; max-width: 440px;
+  opacity: 0; animation: slideUp 1s 0.75s var(--ease-out-expo) forwards;
+  transform: translateY(40px);
 }
-.doc-link:hover{border-color:rgba(34,211,238,0.2);transform:translateY(-2px);}
-.doc-link h4{font-size:0.92rem;font-weight:700;color:var(--white-pure);margin-bottom:0.35rem;}
-.doc-link p{font-size:0.82rem;color:var(--gray-300);line-height:1.55;}
-.doc-link .arrow{display:inline-block;margin-top:0.75rem;font-size:0.78rem;font-weight:600;color:var(--cyan);}
-
-/* FAQ */
-#faq{background:var(--navy);}
-.faq-list{max-width:700px;margin:0 auto;}
-.faq-item{border-bottom:1px solid rgba(255,255,255,0.05);padding:1.1rem 0;}
-.faq-q{
-  font-size:0.95rem;font-weight:600;color:var(--white-pure);cursor:pointer;
-  display:flex;justify-content:space-between;align-items:center;
-  background:none;border:none;width:100%;text-align:left;font-family:var(--font-main);padding:0;
+.email-form input {
+  flex: 1; padding: 17px 20px; border: 1.5px solid var(--ink-ghost);
+  border-radius: 16px; font-family: var(--ff-body); font-size: 15px;
+  background: var(--white); color: var(--ink); outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
-.faq-q::after{content:'+';font-size:1.2rem;color:var(--cyan);transition:transform 0.2s;flex-shrink:0;margin-left:1rem;}
-.faq-item.open .faq-q::after{transform:rotate(45deg);}
-.faq-a{font-size:0.87rem;color:var(--gray-200);line-height:1.7;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s ease;}
-.faq-item.open .faq-a{max-height:300px;padding-top:0.75rem;}
+.email-form input:focus { border-color: var(--sage-400); box-shadow: 0 0 0 4px rgba(78,122,46,0.08); }
+.email-form input::placeholder { color: var(--ink-ghost); }
+.email-form button {
+  padding: 17px 32px; border: none; border-radius: 16px;
+  background: var(--sage-600); color: var(--white);
+  font-family: var(--ff-body); font-size: 15px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.3s var(--ease-out-expo);
+}
+.email-form button:hover { background: var(--sage-700); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(78,122,46,0.22); }
 
-/* CTA */
-#cta{text-align:center;padding:7rem 2rem;position:relative;}
-#cta::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(34,211,238,0.06),transparent 65%);pointer-events:none;}
-#cta h2{font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--white-pure);letter-spacing:-0.03em;line-height:1.1;margin-bottom:0.75rem;}
-#cta p{font-size:1.05rem;color:var(--gray-200);max-width:460px;margin:0 auto 2.5rem;}
-
-footer{padding:2rem;text-align:center;font-size:0.78rem;color:var(--gray-300);border-top:1px solid rgba(255,255,255,0.04);}
-footer a{color:var(--gray-200);text-decoration:none;}
-footer a:hover{color:var(--cyan);}
-
-@media(max-width:900px){.setup-steps{grid-template-columns:1fr;}}
-@media(max-width:768px){
-  .how-grid,.benefits-grid,.docs-preview{grid-template-columns:1fr;}
-  .value-strip{grid-template-columns:1fr;}
-  .nav-links{display:none;}
-  .nav-toggle{display:block;}
-  nav{padding:0.85rem 1.5rem;}
-  nav.mobile-open .nav-links{
-    display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;
-    background:var(--navy);border-bottom:1px solid rgba(255,255,255,0.06);
-    padding:1rem 1.5rem;gap:0.75rem;
-  }
+.hero__proof {
+  font-size: 13px; color: var(--ink-faint); margin-top: 16px;
+  opacity: 0; animation: fadeIn 1s 1s var(--ease-out-expo) forwards;
 }
 
-.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease;}
-.reveal.vis{opacity:1;transform:translateY(0);}
+/* Hero visual — phone mockup + dog photos */
+.hero__visual {
+  position: relative;
+  opacity: 0; animation: slideUp 1.2s 0.5s var(--ease-out-expo) forwards;
+  transform: translateY(50px);
+}
+.hero__phone {
+  width: 280px; margin: 0 auto;
+  background: var(--ink); border-radius: 40px;
+  padding: 12px; position: relative; z-index: 2;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.15), 0 16px 32px rgba(0,0,0,0.08);
+}
+.hero__phone-screen {
+  background: var(--white); border-radius: 30px;
+  overflow: hidden; padding: 24px 16px;
+}
+.phone-header { font-family: var(--ff-display); font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.phone-sub { font-size: 11px; color: var(--ink-faint); margin-bottom: 16px; }
+.phone-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px; border-radius: 14px; margin-bottom: 8px;
+  background: var(--cream); border: 1px solid rgba(0,0,0,0.04);
+}
+.phone-item-dot { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; }
+.phone-item-dot.s { background: var(--sage-100); }
+.phone-item-dot.a { background: var(--amber-100); }
+.phone-item-dot.c { background: var(--coral-100); }
+.phone-item-text { flex: 1; }
+.phone-item-name { font-size: 12px; font-weight: 700; color: var(--ink); }
+.phone-item-detail { font-size: 10px; color: var(--ink-muted); }
+.phone-item-price { font-size: 12px; font-weight: 700; color: var(--ink); }
+.phone-savings {
+  margin-top: 12px; padding: 12px 16px;
+  background: var(--sage-50); border-radius: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid var(--sage-200);
+}
+.phone-savings span { font-size: 11px; color: var(--sage-700); font-weight: 500; }
+.phone-savings strong { font-size: 14px; font-weight: 700; color: var(--sage-700); }
+.phone-btn {
+  display: block; margin-top: 16px; padding: 14px;
+  background: var(--sage-600); border-radius: 14px;
+  text-align: center; font-size: 13px; font-weight: 700; color: var(--white);
+}
+
+/* Floating dog photos around phone */
+.hero__dog-1, .hero__dog-2 {
+  position: absolute; border-radius: 20px;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.1);
+  border: 3px solid var(--white);
+  object-fit: cover;
+}
+.hero__dog-1 { width: 140px; height: 170px; top: 20px; right: -20px; z-index: 1; animation: drift 7s ease-in-out infinite; }
+.hero__dog-2 { width: 120px; height: 150px; bottom: 40px; left: -30px; z-index: 3; animation: drift 8s ease-in-out infinite 1s; }
+
+@keyframes drift { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-10px) rotate(1deg)} }
+
+@media(max-width:900px) {
+  .hero__grid { grid-template-columns: 1fr; text-align: center; }
+  .hero__sub { margin-left: auto; margin-right: auto; }
+  .email-form { margin: 0 auto; }
+  .hero__proof { text-align: center; }
+  .hero__visual { margin-top: 40px; }
+  .hero__dog-1 { right: 10px; width: 100px; height: 120px; }
+  .hero__dog-2 { left: 10px; width: 90px; height: 110px; }
+}
+
+/* ============================================
+   MARQUEE — scrolling social proof
+   ============================================ */
+.marquee { padding: 48px 0; border-top: 1px solid rgba(0,0,0,0.04); border-bottom: 1px solid rgba(0,0,0,0.04); overflow: hidden; }
+.marquee__track { display: flex; width: max-content; animation: scroll 50s linear infinite; }
+.marquee__track:hover { animation-play-state: paused; }
+@keyframes scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.marquee__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 24px; margin: 0 6px; border-radius: 99px;
+  background: var(--white); border: 1px solid rgba(0,0,0,0.04);
+  font-size: 13px; font-weight: 500; color: var(--ink-light);
+  white-space: nowrap; flex-shrink: 0;
+}
+.marquee__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.marquee__dot--sage { background: var(--sage-400); }
+.marquee__dot--amber { background: var(--amber-500); }
+.marquee__dot--coral { background: var(--coral-500); }
+
+/* ============================================
+   THE NUMBER — big bold stat break
+   ============================================ */
+.bignum { padding: 120px 0; text-align: center; }
+.bignum__number {
+  font-family: var(--ff-display); font-weight: 700;
+  font-size: clamp(80px, 14vw, 180px); line-height: 0.9;
+  letter-spacing: -0.05em;
+  background: linear-gradient(135deg, var(--sage-600), var(--sage-400));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.bignum__label {
+  font-size: 18px; color: var(--ink-muted); margin-top: 16px;
+  max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;
+}
+
+/* ============================================
+   COMPARE — editorial split
+   ============================================ */
+.compare { padding: 100px 0; }
+.compare__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; align-items: center; }
+
+.compare__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-600); margin-bottom: 16px; }
+.compare h2 { font-family: var(--ff-display); font-size: clamp(30px, 3.5vw, 44px); font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 20px; }
+.compare__desc { font-size: 16px; line-height: 1.7; color: var(--ink-muted); }
+
+.compare__card {
+  background: var(--white); border-radius: 28px;
+  padding: 32px; border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.05);
+}
+.compare__product { display: flex; gap: 14px; align-items: center; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.04); margin-bottom: 20px; }
+.compare__product-icon { width: 52px; height: 52px; background: var(--sage-50); border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.compare__product-icon svg { width: 24px; height: 24px; color: var(--sage-600); }
+.compare__product h4 { font-size: 15px; font-weight: 700; color: var(--ink); }
+.compare__product span { font-size: 12px; color: var(--ink-faint); }
+
+.compare__row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 16px; border-radius: 12px; font-size: 14px;
+  margin-bottom: 6px;
+  opacity: 0; transform: translateX(-16px);
+  transition: all 0.5s var(--ease-out-expo);
+}
+.compare__row.show { opacity: 1; transform: none; }
+.compare__row .r-name { font-weight: 500; color: var(--ink-light); }
+.compare__row .r-price { font-weight: 700; color: var(--ink-light); }
+.compare__row--best { background: var(--sage-50); border: 1px solid var(--sage-200); }
+.compare__row--best .r-name, .compare__row--best .r-price { color: var(--sage-700); }
+.compare__badge { font-size: 10px; font-weight: 700; background: var(--sage-600); color: white; padding: 3px 10px; border-radius: 99px; margin-left: 10px; }
+
+.compare__total {
+  margin-top: 16px; padding: 16px 20px;
+  background: var(--amber-50); border-radius: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid rgba(212,160,23,0.15);
+  opacity: 0; transition: opacity 0.6s 0.6s;
+}
+.compare__total.show { opacity: 1; }
+.compare__total span { font-size: 13px; color: var(--ink-muted); }
+.compare__total strong { font-family: var(--ff-display); font-size: 20px; font-weight: 700; color: var(--amber-600); }
+
+@media(max-width:900px) {
+  .compare__grid { grid-template-columns: 1fr; gap: 40px; }
+}
+
+/* ============================================
+   HOW — 3 steps, editorial
+   ============================================ */
+.how { padding: 120px 0; background: var(--sage-50); color: var(--ink); position: relative; overflow: hidden; border-top: 1px solid rgba(0,0,0,0.04); border-bottom: 1px solid rgba(0,0,0,0.04); }
+.how::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 40%, rgba(78,122,46,0.06) 0%, transparent 60%); pointer-events: none; }
+.how .wrap { position: relative; z-index: 1; }
+.how__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-600); margin-bottom: 16px; }
+.how h2 { font-family: var(--ff-display); font-size: clamp(30px, 4vw, 46px); font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; margin-bottom: 64px; color: var(--ink); }
+.how__steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; }
+.how__step {
+  padding: 36px; border-radius: 24px;
+  background: var(--white); border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.4s var(--ease-out-expo);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.how__step:hover { background: var(--white); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
+.how__step-num {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: var(--sage-500); color: var(--white); display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; margin-bottom: 24px;
+}
+.how__step h3 { font-family: var(--ff-display); font-size: 22px; font-weight: 600; margin-bottom: 10px; color: var(--ink); }
+.how__step p { font-size: 14px; line-height: 1.7; color: var(--ink-muted); }
+
+@media(max-width:768px) { .how__steps { grid-template-columns: 1fr; } }
+
+/* ============================================
+   FEATURES — offset grid with custom icons
+   ============================================ */
+.features { padding: 120px 0; }
+.features__header { margin-bottom: 56px; }
+.features__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-600); margin-bottom: 16px; }
+.features h2 { font-family: var(--ff-display); font-size: clamp(30px, 4vw, 44px); font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; color: var(--ink); max-width: 600px; }
+
+.features__grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+.feat {
+  padding: 36px; border-radius: 24px; background: var(--white);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: all 0.4s var(--ease-out-expo);
+  position: relative; overflow: hidden;
+}
+.feat:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.05); }
+.feat__icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+}
+.feat__icon svg { width: 22px; height: 22px; }
+.feat__icon--sage { background: var(--sage-50); color: var(--sage-600); }
+.feat__icon--coral { background: var(--coral-50); color: var(--coral-500); }
+.feat__icon--amber { background: var(--amber-50); color: var(--amber-600); }
+.feat h3 { font-family: var(--ff-display); font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.feat p { font-size: 14px; line-height: 1.7; color: var(--ink-muted); }
+
+/* Accent bar */
+.feat::after { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 48px; border-radius: 0 3px 3px 0; }
+.feat:nth-child(1)::after { background: var(--sage-400); }
+.feat:nth-child(2)::after { background: var(--coral-400); }
+.feat:nth-child(3)::after { background: var(--amber-500); }
+.feat:nth-child(4)::after { background: var(--sage-600); }
+
+@media(max-width:768px) { .features__grid { grid-template-columns: 1fr; } }
+
+/* ============================================
+   PHOTO STRIP
+   ============================================ */
+.photos { padding: 24px 0; overflow: hidden; }
+.photos__track { display: flex; gap: 16px; width: max-content; animation: scrollPhotos 35s linear infinite; }
+@keyframes scrollPhotos { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.photos__track img { width: 260px; height: 300px; object-fit: cover; border-radius: 20px; flex-shrink: 0; }
+
+/* ============================================
+   RETAILERS
+   ============================================ */
+.retailers { padding: 80px 0; text-align: center; }
+.retailers h3 { font-family: var(--ff-display); font-size: 24px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.retailers > .wrap > p { font-size: 14px; color: var(--ink-faint); margin-bottom: 32px; }
+.retailers__pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 640px; margin: 0 auto; }
+.r-pill { padding: 11px 24px; background: var(--white); border: 1px solid rgba(0,0,0,0.05); border-radius: 99px; font-size: 14px; font-weight: 500; color: var(--ink-light); transition: all 0.25s; }
+.r-pill:hover { border-color: var(--sage-300); background: var(--sage-50); transform: translateY(-2px); }
+
+/* ============================================
+   BLOG
+   ============================================ */
+.blog { padding: 100px 0; }
+.blog__header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 44px; }
+.blog h2 { font-family: var(--ff-display); font-size: clamp(28px, 3vw, 38px); font-weight: 500; letter-spacing: -0.02em; color: var(--ink); }
+.blog__header a { font-size: 14px; font-weight: 500; color: var(--sage-600); text-decoration: none; }
+
+.blog__grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+.blog-card {
+  background: var(--white); border-radius: 22px; border: 1px solid rgba(0,0,0,0.04);
+  overflow: hidden; text-decoration: none; color: inherit; display: block;
+  transition: all 0.4s var(--ease-out-expo);
+}
+.blog-card:hover { transform: translateY(-6px); box-shadow: 0 20px 52px rgba(0,0,0,0.07); }
+.blog-card img { width: 100%; height: 200px; object-fit: cover; }
+.blog-card__body { padding: 24px; }
+.blog-card__tag {
+  display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 4px 10px; border-radius: 99px; margin-bottom: 12px;
+}
+.blog-card__tag--prices { background: var(--amber-100); color: var(--amber-600); }
+.blog-card__tag--safety { background: var(--coral-100); color: var(--coral-500); }
+.blog-card__tag--nutrition { background: var(--sage-100); color: var(--sage-700); }
+.blog-card h3 { font-family: var(--ff-display); font-size: 19px; font-weight: 600; line-height: 1.3; color: var(--ink); margin-bottom: 8px; }
+.blog-card p { font-size: 13px; line-height: 1.6; color: var(--ink-faint); }
+.blog-card__meta { margin-top: 12px; font-size: 11px; color: var(--ink-ghost); }
+
+@media(max-width:768px) {
+  .blog__grid { grid-template-columns: 1fr; }
+  .blog__header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* ============================================
+   CTA — full width moment
+   ============================================ */
+.cta {
+  padding: 120px 0; text-align: center;
+  background: var(--amber-50); color: var(--ink);
+  position: relative; overflow: hidden;
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+.cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(212,160,23,0.06) 0%, transparent 60%); pointer-events: none; }
+.cta .wrap { position: relative; z-index: 1; }
+.cta h2 { font-family: var(--ff-display); font-size: clamp(36px, 5vw, 56px); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; color: var(--ink); }
+.cta h2 em { font-weight: 700; font-style: italic; color: var(--sage-500); }
+.cta > .wrap > p { font-size: 16px; color: var(--ink-muted); margin-bottom: 40px; max-width: 420px; margin-left: auto; margin-right: auto; }
+.cta .email-form { margin: 0 auto; max-width: 460px; }
+.cta .email-form input { background: var(--white); border-color: var(--ink-ghost); color: var(--ink); }
+.cta .email-form input::placeholder { color: var(--ink-ghost); }
+.cta .email-form input:focus { border-color: var(--sage-400); box-shadow: 0 0 0 4px rgba(78,122,46,0.08); }
+.cta .email-form button { background: var(--sage-600); color: var(--white); }
+.cta .email-form button:hover { background: var(--sage-700); }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer { padding: 48px 0; border-top: 1px solid rgba(0,0,0,0.04); }
+.footer__inner { display: flex; justify-content: space-between; align-items: center; }
+.footer__left { display: flex; align-items: center; gap: 28px; }
+.footer__mark { font-family: var(--ff-display); font-size: 18px; font-weight: 500; color: var(--sage-700); }
+.footer__links { display: flex; gap: 20px; list-style: none; }
+.footer__links a { font-size: 12px; color: var(--ink-faint); text-decoration: none; transition: color 0.2s; }
+.footer__links a:hover { color: var(--ink-muted); }
+.footer__right { font-size: 12px; color: var(--ink-ghost); }
+
+@media(max-width:768px) {
+  .footer__inner { flex-direction: column; gap: 16px; text-align: center; }
+  .footer__left { flex-direction: column; gap: 12px; }
+}
 </style>
 </head>
 <body>
 
-<nav id="nav">
-  <a href="#" class="logo">
-    <img src="ae-logo.png" alt="AE">
-    <div class="logo-text"><span>Anticipation</span><span>Engine</span></div>
-  </a>
-  <button class="nav-toggle" onclick="document.getElementById('nav').classList.toggle('mobile-open')">
-    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
-  </button>
-  <div class="nav-links">
-    <a href="#video">See It</a>
-    <a href="#how">How It Works</a>
-    <a href="#benefits">Benefits</a>
-    <a href="#setup">Setup</a>
-    <a href="#faq">FAQ</a>
-    <span class="nav-cta-wrap"><a href="#cta">Install Free</a></span>
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="wrap nav__inner">
+    <a href="/" class="nav__mark">luca<i>.</i></a>
+    <ul class="nav__links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="#signup" class="nav__btn">Get early access</a></li>
+    </ul>
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-  <img src="ae-logo.png" alt="Anticipation Engine" class="hero-logo">
-  <h1>Give smaller discounts<br>that <span class="grad">feel bigger</span></h1>
-  <p class="hero-sub">Anticipation Engine replaces static coupons with an interactive experience. Shoppers reveal their own discount — you protect your margin while boosting conversion.</p>
-  <div class="hero-actions">
-    <a href="#cta" class="btn btn-grad">Install on Shopify — Free</a>
-    <a href="#video" class="btn btn-ghost">Watch Demo ↓</a>
-  </div>
-</section>
-
-<div class="container">
-  <div class="value-strip reveal">
-    <div class="value-item">
-      <div class="value-num">↓ Lower</div>
-      <div class="value-label">Average discount given vs. flat coupons</div>
+  <div class="wrap hero__grid">
+    <div>
+      <div class="hero__eyebrow">Launching soon</div>
+      <h1>Your dog's <em>secretary</em></h1>
+      <p class="hero__sub">You already give them the best walks, the best belly rubs, and the best spot on the couch. Luca makes sure they get the best food, treats, toys, and everything else — at the best price, every week, without you lifting a finger.</p>
+      <form class="email-form" id="hero-form" onsubmit="handleSubmit(event, this)">
+        <input type="email" placeholder="Your email" required aria-label="Email">
+        <button type="submit">Join waitlist</button>
+      </form>
+      <p class="hero__proof">Free to join. Launching Spring 2026.</p>
     </div>
-    <div class="value-item">
-      <div class="value-num">↑ Higher</div>
-      <div class="value-label">Conversion rate at checkout</div>
-    </div>
-    <div class="value-item">
-      <div class="value-num">↑ Stronger</div>
-      <div class="value-label">Customer engagement & repeat rate</div>
-    </div>
-  </div>
-</div>
-
-<section id="video">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-tag">See It In Action</div>
-      <h2 class="section-title">Watch the full shopper experience</h2>
-      <p class="section-desc">From cart page to checkout — see how a shopper earns their discount in real time.</p>
-    </div>
-    <div class="video-frame reveal">
-      <div class="video-placeholder">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
-        <p>Demo video goes here</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="how">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-tag">How It Works</div>
-      <h2 class="section-title">Three steps. Two minutes to go live.</h2>
-    </div>
-    <div class="how-grid">
-      <div class="how-card reveal">
-        <div class="how-num">01</div>
-        <h3>Set your rules</h3>
-        <p>Configure your max discount, minimum floor, and crash probability weights. You control exactly how generous every session is — bracket by bracket.</p>
-      </div>
-      <div class="how-card reveal">
-        <div class="how-num">02</div>
-        <h3>Shoppers play</h3>
-        <p>A "Reveal Your Discount" button appears on the cart. The meter climbs toward your max — but it could crash at any moment. The tension is the product.</p>
-      </div>
-      <div class="how-card reveal">
-        <div class="how-num">03</div>
-        <h3>They cash out</h3>
-        <p>Shoppers lock in their discount whenever they want. A unique Shopify discount code is generated and auto-applied at checkout. No coupon codes to type.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="benefits">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-tag">Merchant Benefits</div>
-      <h2 class="section-title">Why this works for your store</h2>
-      <p class="section-desc">Flat coupons train shoppers to wait for sales. AE trains them to buy now — at a discount you chose.</p>
-    </div>
-    <div class="benefits-grid">
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">📉</div>
-        <h3>Your max is a ceiling, not a floor</h3>
-        <p>Most shoppers cash out early, taking less than your maximum. Your average discount given stays well below the headline number. Same conversion lift, smaller margin hit.</p>
-      </div>
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">🛒</div>
-        <h3>Kills cart abandonment at the source</h3>
-        <p>The interactive mechanic engages shoppers at the exact moment they're deciding whether to buy. No more bouncing to Google for coupon codes — the discount is right here.</p>
-      </div>
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">🧠</div>
-        <h3>Earned discounts outperform free ones</h3>
-        <p>When shoppers earn their discount through an interactive experience, they feel ownership over it. Earned rewards have higher redemption rates and generate less buyer's remorse.</p>
-      </div>
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">🔒</div>
-        <h3>Percentage-based and abuse-proof</h3>
-        <p>Discounts are percentages, not fixed dollars — adding items post-cashout benefits you. Each code is unique and single-use. No sharing, no stacking, no cart manipulation.</p>
-      </div>
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">📊</div>
-        <h3>Real analytics, not vanity metrics</h3>
-        <p>Your dashboard shows AE-attributed revenue, cost of discounts given, ROI per dollar discounted, average discount rate, and repeat customer tracking. Numbers that prove ROI.</p>
-      </div>
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">⚡</div>
-        <h3>Live in two minutes, no code</h3>
-        <p>Install, configure your settings, enable the theme block. Works with Shopify's native theme editor. No developer required. No script tags to paste.</p>
-      </div>
-    </div>
-    <div class="proof-banner reveal">
-      <p><strong>The math is simple:</strong> If your max discount is 25% but the average shopper cashes out at 12%, you're getting the same "up to 25% off" promotional power at roughly half the cost of a flat coupon.</p>
-    </div>
-  </div>
-</section>
-
-<section id="setup">
-  <div class="container">
-    <div class="setup-steps reveal">
-      <div class="setup-left">
-        <div class="section-tag">Quick Setup</div>
-        <h2>Go live in under two minutes</h2>
-        <p>No developers. No code. Just install, configure, and enable.</p>
-        <ol class="setup-list">
-          <li>Install <strong>Anticipation Engine</strong> from the Shopify App Store.</li>
-          <li>Open the AE dashboard in your Shopify admin. Set your <strong>max discount</strong>, <strong>min floor</strong>, and <strong>crash weights</strong>.</li>
-          <li>Go to <strong>Online Store → Themes → Customize</strong>. Navigate to your Cart page.</li>
-          <li>Add the <strong>Reveal My Price</strong> block from Apps in the sidebar. Position it near your checkout button.</li>
-          <li>Hit <strong>Save</strong>. You're live.</li>
-        </ol>
-      </div>
-      <div class="setup-right">
-        <h4>Key configuration options</h4>
-        <div class="config-item">
-          <div class="config-label">Maximum Discount</div>
-          <div class="config-desc">The highest percentage a shopper can potentially reach. This is the ceiling — most will cash out below it.</div>
-          <div class="config-example">Recommended: 15–25%</div>
-        </div>
-        <div class="config-item">
-          <div class="config-label">Minimum Floor</div>
-          <div class="config-desc">Where the meter starts. Shoppers always begin here when they click reveal.</div>
-          <div class="config-example">Recommended: 5–10%</div>
-        </div>
-        <div class="config-item">
-          <div class="config-label">Crash Weights</div>
-          <div class="config-desc">Control crash probability across 5% brackets. Front-load weights to lower brackets to keep your average discount low while maintaining excitement.</div>
-          <div class="config-example">e.g. 40% / 30% / 20% / 10%</div>
-        </div>
-        <div class="config-item">
-          <div class="config-label">Cooldown & Volume Cap</div>
-          <div class="config-desc">Prevent repeat plays and cap daily sessions to control total discount exposure.</div>
+    <div class="hero__visual">
+      <img src="images/luca-park.jpeg" alt="Luca the dog at the park" class="hero__dog-1">
+      <div class="hero__phone">
+        <div class="hero__phone-screen">
+          <div class="phone-header">Luca's cart for this week</div>
+          <div class="phone-sub">14 items · 3 retailers · saving $22.60</div>
+          <div class="phone-item"><div class="phone-item-dot s"></div><div class="phone-item-text"><div class="phone-item-name">Blue Buffalo Wilderness 24lb</div><div class="phone-item-detail">Chewy · cheapest this week</div></div><div class="phone-item-price">$48.99</div></div>
+          <div class="phone-item"><div class="phone-item-dot a"></div><div class="phone-item-text"><div class="phone-item-name">KONG Classic Dog Toy — Large</div><div class="phone-item-detail">Amazon · new find for Dwight</div></div><div class="phone-item-price">$14.99</div></div>
+          <div class="phone-item"><div class="phone-item-dot c"></div><div class="phone-item-text"><div class="phone-item-name">Nutramax Cosequin DS Plus</div><div class="phone-item-detail">Walmart · joint supplement</div></div><div class="phone-item-price">$27.99</div></div>
+          <div class="phone-item"><div class="phone-item-dot s"></div><div class="phone-item-text"><div class="phone-item-name">Burt's Bees Oatmeal Shampoo</div><div class="phone-item-detail">Target · restocking</div></div><div class="phone-item-price">$9.49</div></div>
+          <div class="phone-savings"><span>Savings this week</span><strong>$22.60</strong></div>
+          <div class="phone-btn">Approve cart</div>
         </div>
       </div>
+      <img src="images/dwight-couch.jpg" alt="Dwight the Cane Corso" class="hero__dog-2">
     </div>
   </div>
 </section>
 
-<section id="docs">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-tag">Documentation</div>
-      <h2 class="section-title">Need the details? We've got docs.</h2>
+<!-- MARQUEE -->
+<section class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Saved $22.60 on this week's cart</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Caught a recall on Blue Buffalo Wilderness</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>Found the same treats $11 cheaper at Chewy</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>$247 saved since joining Luca</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Luca already found a safe substitute</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>KONG toys 30% cheaper at Amazon this week</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Restocking joint supplements before you run out</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Saved $22.60 on this week's cart</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Caught a recall on Blue Buffalo Wilderness</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>Found the same treats $11 cheaper at Chewy</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>$247 saved since joining Luca</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Luca already found a safe substitute</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>KONG toys 30% cheaper at Amazon this week</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Restocking joint supplements before you run out</div>
+  </div>
+</section>
+
+<!-- BIG NUMBER -->
+<section class="bignum reveal">
+  <div class="wrap">
+    <div class="bignum__number">25–40%</div>
+    <div class="bignum__label">That's the price gap for the exact same product — food, treats, supplements, toys — just at different stores. Your dog doesn't care where it ships from. Your wallet does.</div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section class="compare" id="compare">
+  <div class="wrap compare__grid">
+    <div>
+      <div class="compare__label reveal">See the difference</div>
+      <h2 class="reveal">Same product.<br>Wildly different prices.</h2>
+      <p class="compare__desc reveal">Whether it's kibble, chews, shampoo, or supplements — Luca checks every retailer, every week. You always get the lowest price without lifting a finger.</p>
     </div>
-    <div class="docs-preview reveal">
-      <a href="#" class="doc-link" onclick="event.preventDefault();">
-        <h4>The Crash Mechanic</h4>
-        <p>Why the crash exists, how it works for shoppers and merchants, and what happens after a crash outcome.</p>
-        <span class="arrow">Read more →</span>
+    <div class="compare__card reveal" id="compare-card">
+      <div class="compare__product">
+        <div class="compare__product-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+        </div>
+        <div>
+          <h4>Blue Buffalo Wilderness Salmon</h4>
+          <span>Adult · Grain-Free · 24 lb</span>
+        </div>
+      </div>
+      <div id="price-rows">
+        <div class="compare__row" data-d="0"><span class="r-name">PetSmart</span><span class="r-price">$67.99</span></div>
+        <div class="compare__row" data-d="120"><span class="r-name">Amazon</span><span class="r-price">$59.98</span></div>
+        <div class="compare__row" data-d="240"><span class="r-name">Walmart</span><span class="r-price">$54.48</span></div>
+        <div class="compare__row compare__row--best" data-d="360"><span class="r-name">Chewy</span><span class="r-price">$48.99</span><span class="compare__badge">Best price</span></div>
+      </div>
+      <div class="compare__total" id="compare-total"><span>Luca picks the best price</span><strong>You save $19.00</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="how__label reveal">How it works</div>
+    <h2 class="reveal">Three steps. More time for the dog park.</h2>
+    <div class="how__steps">
+      <div class="how__step reveal"><div class="how__step-num">1</div><h3>Tell Luca about your dog</h3><p>Breed, age, weight, allergies, diet — a 2-minute quiz that powers everything. Multi-dog households welcome.</p></div>
+      <div class="how__step reveal reveal-d1"><div class="how__step-num">2</div><h3>Luca builds your cart</h3><p>Every week, Luca compares prices on food, treats, toys, supplements, and grooming supplies across 8 retailers — and drafts a cart with the best deals on everything.</p></div>
+      <div class="how__step reveal reveal-d2"><div class="how__step-num">3</div><h3>Approve and save</h3><p>Open the app, glance at the cart, remove anything you don't want, and tap approve. That's your entire job.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="features__header">
+      <div class="features__label reveal">Why Luca</div>
+      <h2 class="reveal">Everything your dog deserves.<br>Nothing you don't need.</h2>
+    </div>
+    <div class="features__grid">
+      <div class="feat reveal">
+        <div class="feat__icon feat__icon--sage"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 17l3-3h4l3 3h4l3-3h3"/><circle cx="12" cy="9" r="3"/><path d="M12 6V3"/></svg></div>
+        <h3>Cross-retailer price optimization</h3>
+        <p>Food, treats, toys, supplements, grooming supplies — Luca checks Chewy, Amazon, Walmart, Costco, PetSmart, Petco, Target, and Tractor Supply for the cheapest option on every item.</p>
+      </div>
+      <div class="feat reveal reveal-d1">
+        <div class="feat__icon feat__icon--coral"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Recall monitoring</h3>
+        <p>Luca scans the FDA database daily. If anything in your dog's cart gets recalled — food, treats, chews — it's removed and replaced before you hear about it.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat__icon feat__icon--amber"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></div>
+        <h3>Smart substitutions</h3>
+        <p>Out of stock? Recalled? Overpriced? Luca finds the closest replacement that respects your dog's allergies, preferences, and nutritional needs.</p>
+      </div>
+      <div class="feat reveal reveal-d1">
+        <div class="feat__icon feat__icon--sage"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+        <h3>Restock predictions</h3>
+        <p>Luca learns how fast your dog goes through everything — food, treats, supplements, shampoo — and adds items to your cart before you run out.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO STRIP -->
+<section class="photos" aria-hidden="true">
+  <div class="photos__track">
+    <img src="images/luca-park.jpeg" alt="" loading="lazy">
+    <img src="images/dwight-store.jpg" alt="" loading="lazy">
+    <img src="images/both-dogs.jpeg" alt="" loading="lazy">
+    <img src="images/dogs-creek.jpg" alt="" loading="lazy">
+    <img src="images/luca-closeup.jpg" alt="" loading="lazy">
+    <img src="images/dwight-park.jpeg" alt="" loading="lazy">
+    <img src="images/luca-couch-silly.jpeg" alt="" loading="lazy">
+    <img src="images/luca-park.jpeg" alt="" loading="lazy">
+    <img src="images/dwight-store.jpg" alt="" loading="lazy">
+    <img src="images/both-dogs.jpeg" alt="" loading="lazy">
+    <img src="images/dogs-creek.jpg" alt="" loading="lazy">
+    <img src="images/luca-closeup.jpg" alt="" loading="lazy">
+    <img src="images/dwight-park.jpeg" alt="" loading="lazy">
+    <img src="images/luca-couch-silly.jpeg" alt="" loading="lazy">
+  </div>
+</section>
+
+<!-- RETAILERS -->
+<section class="retailers reveal">
+  <div class="wrap">
+    <h3>8 retailers at launch</h3>
+    <p>Every price checked. Every week.</p>
+    <div class="retailers__pills">
+      <span class="r-pill">Chewy</span><span class="r-pill">Amazon</span><span class="r-pill">Walmart</span>
+      <span class="r-pill">Costco</span><span class="r-pill">PetSmart</span><span class="r-pill">Petco</span>
+      <span class="r-pill">Target</span><span class="r-pill">Tractor Supply</span>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="blog" id="blog">
+  <div class="wrap">
+    <div class="blog__header reveal">
+      <h2>From the blog</h2>
+    </div>
+    <div class="blog__grid">
+      <a href="blog/dog-food-price-comparison.html" class="blog-card reveal">
+        <img src="images/dogs-creek.jpg" alt="Dogs at creek" loading="lazy">
+        <div class="blog-card__body">
+          <span class="blog-card__tag blog-card__tag--prices">Prices</span>
+          <h3>We compared the same dog food across 6 stores. The difference is insane.</h3>
+          <p>A 24-lb bag costs anywhere from $48 to $68. Here's every price we found.</p>
+          <div class="blog-card__meta">5 min read</div>
+        </div>
       </a>
-      <a href="#" class="doc-link" onclick="event.preventDefault();">
-        <h4>Theme Compatibility</h4>
-        <p>Cart page blocks, cart drawer embeds via MutationObserver, and which themes have been tested.</p>
-        <span class="arrow">Read more →</span>
+      <a href="blog/pet-food-recalls-2025-2026.html" class="blog-card reveal reveal-d1">
+        <img src="images/luca-closeup.jpg" alt="Luca looking at camera" loading="lazy">
+        <div class="blog-card__body">
+          <span class="blog-card__tag blog-card__tag--safety">Safety</span>
+          <h3>Every FDA pet food recall in 2025–2026: what you need to know</h3>
+          <p>Over half of all recalls are the most serious category. Here's what to watch for.</p>
+          <div class="blog-card__meta">8 min read</div>
+        </div>
       </a>
-      <a href="#" class="doc-link" onclick="event.preventDefault();">
-        <h4>Dashboard & Analytics</h4>
-        <p>Every metric on your dashboard explained — revenue attribution, ROI, average discount, repeat customers.</p>
-        <span class="arrow">Read more →</span>
+      <a href="blog/how-to-read-dog-food-labels.html" class="blog-card reveal reveal-d2">
+        <img src="images/dwight-store.jpg" alt="Dwight at the store" loading="lazy">
+        <div class="blog-card__body">
+          <span class="blog-card__tag blog-card__tag--nutrition">Nutrition</span>
+          <h3>How to read a dog food ingredient label in 30 seconds</h3>
+          <p>Named proteins, meal vs. fresh, guaranteed analysis — what actually matters.</p>
+          <div class="blog-card__meta">6 min read</div>
+        </div>
       </a>
     </div>
   </div>
 </section>
 
-<section id="faq" style="background:var(--navy-deep);">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-tag">FAQ</div>
-      <h2 class="section-title">Common questions</h2>
-    </div>
-    <div class="faq-list reveal">
-      <div class="faq-item">
-        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Does this work with my theme?</button>
-        <div class="faq-a">Anticipation Engine uses Shopify's native theme app extensions and works with any Online Store 2.0 compatible theme. It's been tested on Dawn and Refresh, and includes an automatic cart drawer embed for AJAX cart themes.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can shoppers cheat or abuse the discount?</button>
-        <div class="faq-a">Each cashout generates a unique, single-use Shopify discount code. Codes can't be shared, reused, or stacked. The discount is percentage-based, so adding items post-cashout benefits you. A configurable cooldown prevents repeat plays.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">What happens when the meter crashes?</button>
-        <div class="faq-a">The shopper sees a gentle "No luck this time" message and a "Continue to my order" button. Their cart is untouched — no items removed, no negative experience. Many shoppers who crash still complete their purchase at full price.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">How much does it cost?</button>
-        <div class="faq-a">Anticipation Engine is currently free to install and use. We're focused on proving the mechanic works before introducing paid tiers.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is this gambling?</button>
-        <div class="faq-a">No. Shoppers never risk anything — the worst outcome is paying the normal price. There's no wager, no entry fee, and no loss. AE is an interactive discount experience in the same category as mystery offers and spin-to-win promotions.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Will it slow down my store?</button>
-        <div class="faq-a">No. AE loads asynchronously and only activates on the cart page or when the cart drawer opens. Zero impact on product pages, collections, or homepage speed.</div>
-      </div>
-    </div>
+<!-- CTA -->
+<section class="cta" id="signup">
+  <div class="wrap">
+    <h2 class="reveal">They give you everything.<br><em>Give them this.</em></h2>
+    <p class="reveal">Join the waitlist. Luca launches Spring 2026.</p>
+    <form class="email-form reveal" id="cta-form" onsubmit="handleSubmit(event, this)">
+      <input type="email" placeholder="Your email" required aria-label="Email">
+      <button type="submit">Join waitlist</button>
+    </form>
   </div>
 </section>
 
-<section id="cta">
-  <div class="container reveal">
-    <h2>Your discounts should<br>work <span class="grad">harder</span> for you</h2>
-    <p>Free to install. Live in under two minutes. See the ROI in your dashboard.</p>
-    <a href="https://apps.shopify.com/" class="btn btn-grad" style="font-size:1rem;padding:1rem 2.25rem;">Install Free on Shopify →</a>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div class="footer__left">
+      <span class="footer__mark">luca.</span>
+      <ul class="footer__links">
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="disclosure.html">Affiliate disclosure</a></li>
+        <li><a href="terms.html">Terms</a></li>
+      </ul>
+    </div>
+    <div class="footer__right">&copy; 2026 Luca</div>
   </div>
-</section>
-
-<footer>
-  <p>Anticipation Engine &nbsp;·&nbsp; <a href="mailto:anticipationengine@gmail.com">anticipationengine@gmail.com</a> &nbsp;·&nbsp; Built for Shopify</p>
 </footer>
 
 <script>
-const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});},{threshold:0.1});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+// Nav
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => nav.classList.toggle('stuck', window.scrollY > 60));
+
+// Reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); }});
+}, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// Price rows
+const cio = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.compare__row').forEach(r => {
+        setTimeout(() => r.classList.add('show'), parseInt(r.dataset.d)||0);
+      });
+      setTimeout(() => document.getElementById('compare-total').classList.add('show'), 600);
+      cio.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+const cc = document.getElementById('compare-card');
+if (cc) cio.observe(cc);
+
+// Form
+function handleSubmit(e, form) {
+  e.preventDefault();
+  const btn = form.querySelector('button');
+  const input = form.querySelector('input');
+  const email = input.value;
+  btn.textContent = 'Sending...';
+  btn.style.pointerEvents = 'none';
+  input.disabled = true;
+
+  fetch('https://script.google.com/macros/s/AKfycby3yVfULT98W04bsCcFr_-EFruOC4HQh8MnZsLoEzTDwuZ229i7jobppPs9v6eo8y6H/exec', {
+    method: 'POST',
+    body: JSON.stringify({ email: email }),
+    mode: 'no-cors'
+  }).then(() => {
+    btn.textContent = '\u2713 You\u0027re in!';
+    input.value = '';
+    input.placeholder = 'We\u0027ll be in touch';
+    setTimeout(() => {
+      btn.textContent = 'Join waitlist';
+      btn.style.pointerEvents = '';
+      input.disabled = false;
+      input.placeholder = 'Your email';
+    }, 4000);
+  }).catch(() => {
+    btn.textContent = 'Try again';
+    btn.style.pointerEvents = '';
+    input.disabled = false;
+  });
+}
 </script>
 </body>
 </html>
