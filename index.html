@@ -721,32 +721,8 @@ if (cc) cio.observe(cc);
 // Form
 function handleSubmit(e, form) {
   e.preventDefault();
-  const btn = form.querySelector('button');
-  const input = form.querySelector('input');
-  const email = input.value;
-  btn.textContent = 'Sending...';
-  btn.style.pointerEvents = 'none';
-  input.disabled = true;
-
-  fetch('https://script.google.com/macros/s/AKfycby3yVfULT98W04bsCcFr_-EFruOC4HQh8MnZsLoEzTDwuZ229i7jobppPs9v6eo8y6H/exec', {
-    method: 'POST',
-    body: JSON.stringify({ email: email }),
-    mode: 'no-cors'
-  }).then(() => {
-    btn.textContent = '\u2713 You\u0027re in!';
-    input.value = '';
-    input.placeholder = 'We\u0027ll be in touch';
-    setTimeout(() => {
-      btn.textContent = 'Join waitlist';
-      btn.style.pointerEvents = '';
-      input.disabled = false;
-      input.placeholder = 'Your email';
-    }, 4000);
-  }).catch(() => {
-    btn.textContent = 'Try again';
-    btn.style.pointerEvents = '';
-    input.disabled = false;
-  });
+  var email = form.querySelector("input").value;
+  window.open("https://docs.google.com/forms/d/e/1FAIpQLSe6Y9efKInlfMDx-A1qyVifzjxpdACD6A4i6d525izOo369fA/viewform?usp=pp_url&entry.1914404437=" + encodeURIComponent(email), "_blank");
 }
 </script>
 </body>
