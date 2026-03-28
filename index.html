@@ -721,8 +721,26 @@ if (cc) cio.observe(cc);
 // Form
 function handleSubmit(e, form) {
   e.preventDefault();
-  var email = form.querySelector("input").value;
-  window.open("https://docs.google.com/forms/d/e/1FAIpQLSe6Y9efKInlfMDx-A1qyVifzjxpdACD6A4i6d525izOo369fA/viewform?usp=pp_url&entry.1914404437=" + encodeURIComponent(email), "_blank");
+  var btn = form.querySelector("button");
+  var input = form.querySelector("input");
+  var email = input.value;
+  btn.textContent = "Sending...";
+  btn.style.pointerEvents = "none";
+  input.disabled = true;
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSe6Y9efKInlfMDx-A1qyVifzjxpdACD6A4i6d525izOo369fA/formResponse?entry.1914404437=" + encodeURIComponent(email) + "&submit=Submit", {
+    method: "POST",
+    mode: "no-cors"
+  }).then(function() {
+    btn.textContent = "\u2713 You\u0027re in!";
+    input.value = "";
+    input.placeholder = "We\u0027ll be in touch";
+    setTimeout(function() {
+      btn.textContent = "Join waitlist";
+      btn.style.pointerEvents = "";
+      input.disabled = false;
+      input.placeholder = "Your email";
+    }, 4000);
+  });
 }
 </script>
 </body>
