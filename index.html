@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luca — Your Dog's Secretary</title>
+<meta name="description" content="Luca learns what your dog needs — food, treats, toys, supplements, grooming — finds the best price across every retailer, and builds your cart. So you don't have to.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500;1,9..144,700&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   RESET + TOKENS
+   ============================================ */
+:root {
+  --sage-50: #F0F4EC; --sage-100: #DCE6D2; --sage-200: #B9CDA6;
+  --sage-300: #8FB072; --sage-400: #6A9447; --sage-500: #4E7A2E;
+  --sage-600: #3F6324; --sage-700: #314D1C; --sage-800: #243814;
+  --sage-900: #17240D;
+
+  --amber-50: #FEF7E8; --amber-100: #FDECC6; --amber-300: #F6C94E;
+  --amber-500: #D4A017; --amber-600: #B38614;
+
+  --coral-50: #FDF1EE; --coral-100: #FADDD5; --coral-400: #E57A62;
+  --coral-500: #D65A3E;
+
+  --cream: #FAF8F4; --cream-dark: #F3F0E8;
+  --ink: #1B1A17; --ink-light: #3D3B35; --ink-muted: #6B6860;
+  --ink-faint: #A09D94; --ink-ghost: #CBC8BF;
+  --white: #FEFDFB;
+
+  --ff-display: 'Fraunces', Georgia, serif;
+  --ff-body: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-body); background: var(--cream);
+  color: var(--ink); -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ============================================
+   UTILITY
+   ============================================ */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+.wrap--narrow { max-width: 760px; }
+.wrap--mid { max-width: 960px; }
+
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo); }
+.reveal.show { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+
+/* ============================================
+   NAV
+   ============================================ */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 0; transition: all 0.5s var(--ease-out-expo); }
+.nav.stuck { background: rgba(250,248,244,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.nav__inner { display: flex; justify-content: space-between; align-items: center; }
+.nav__mark { font-family: var(--ff-display); font-size: 28px; font-weight: 500; color: var(--sage-700); text-decoration: none; letter-spacing: -0.04em; }
+.nav__mark i { color: var(--sage-400); }
+.nav__links { display: flex; align-items: center; gap: 36px; list-style: none; }
+.nav__links a { font-size: 14px; font-weight: 500; color: var(--ink-muted); text-decoration: none; transition: color 0.2s; }
+.nav__links a:hover { color: var(--ink); }
+.nav__btn { display: inline-block; background: var(--ink); color: var(--cream) !important; padding: 11px 26px; border-radius: 99px; font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0.02em; transition: all 0.3s var(--ease-out-expo) !important; }
+.nav__btn:hover { background: var(--sage-600) !important; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(78,122,46,0.2); }
+
+@media(max-width:768px) { .nav__links { display: none; } }
+
+/* ============================================
+   HERO — asymmetric, editorial
+   ============================================ */
+.hero { padding: 160px 0 100px; position: relative; }
+.hero__grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end; }
+
+.hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--sage-600); margin-bottom: 24px;
+  opacity: 0; animation: fadeIn 0.8s 0.3s var(--ease-out-expo) forwards;
+}
+.hero__eyebrow::before { content: ''; width: 8px; height: 8px; background: var(--sage-400); border-radius: 50%; animation: blink 2.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero h1 {
+  font-family: var(--ff-display); font-weight: 600;
+  font-size: clamp(48px, 6vw, 76px); line-height: 1.05;
+  letter-spacing: -0.03em; color: var(--ink);
+  margin-bottom: 28px;
+  opacity: 0; animation: slideUp 1s 0.45s var(--ease-out-expo) forwards;
+}
+.hero h1 em { font-weight: 700; font-style: italic; color: var(--sage-500); }
+
+.hero__sub {
+  font-size: 18px; line-height: 1.7; color: var(--ink-muted);
+  max-width: 420px; margin-bottom: 44px;
+  opacity: 0; animation: slideUp 1s 0.6s var(--ease-out-expo) forwards;
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+.hero h1, .hero__sub { transform: translateY(40px); }
+
+/* Email form */
+.email-form {
+  display: flex; gap: 10px; max-width: 440px;
+  opacity: 0; animation: slideUp 1s 0.75s var(--ease-out-expo) forwards;
+  transform: translateY(40px);
+}
+.email-form input {
+  flex: 1; padding: 17px 20px; border: 1.5px solid var(--ink-ghost);
+  border-radius: 16px; font-family: var(--ff-body); font-size: 15px;
+  background: var(--white); color: var(--ink); outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.email-form input:focus { border-color: var(--sage-400); box-shadow: 0 0 0 4px rgba(78,122,46,0.08); }
+.email-form input::placeholder { color: var(--ink-ghost); }
+.email-form button {
+  padding: 17px 32px; border: none; border-radius: 16px;
+  background: var(--sage-600); color: var(--white);
+  font-family: var(--ff-body); font-size: 15px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.3s var(--ease-out-expo);
+}
+.email-form button:hover { background: var(--sage-700); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(78,122,46,0.22); }
+
+.hero__proof {
+  font-size: 13px; color: var(--ink-faint); margin-top: 16px;
+  opacity: 0; animation: fadeIn 1s 1s var(--ease-out-expo) forwards;
+}
+
+/* Hero visual — phone mockup + dog photos */
+.hero__visual {
+  position: relative;
+  opacity: 0; animation: slideUp 1.2s 0.5s var(--ease-out-expo) forwards;
+  transform: translateY(50px);
+}
+.hero__phone {
+  width: 280px; margin: 0 auto;
+  background: var(--ink); border-radius: 40px;
+  padding: 12px; position: relative; z-index: 2;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.15), 0 16px 32px rgba(0,0,0,0.08);
+}
+.hero__phone-screen {
+  background: var(--white); border-radius: 30px;
+  overflow: hidden; padding: 24px 16px;
+}
+.phone-header { font-family: var(--ff-display); font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.phone-sub { font-size: 11px; color: var(--ink-faint); margin-bottom: 16px; }
+.phone-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px; border-radius: 14px; margin-bottom: 8px;
+  background: var(--cream); border: 1px solid rgba(0,0,0,0.04);
+}
+.phone-item-dot { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; }
+.phone-item-dot.s { background: var(--sage-100); }
+.phone-item-dot.a { background: var(--amber-100); }
+.phone-item-dot.c { background: var(--coral-100); }
+.phone-item-text { flex: 1; }
+.phone-item-name { font-size: 12px; font-weight: 700; color: var(--ink); }
+.phone-item-detail { font-size: 10px; color: var(--ink-muted); }
+.phone-item-price { font-size: 12px; font-weight: 700; color: var(--ink); }
+.phone-savings {
+  margin-top: 12px; padding: 12px 16px;
+  background: var(--sage-50); border-radius: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid var(--sage-200);
+}
+.phone-savings span { font-size: 11px; color: var(--sage-700); font-weight: 500; }
+.phone-savings strong { font-size: 14px; font-weight: 700; color: var(--sage-700); }
+.phone-btn {
+  display: block; margin-top: 16px; padding: 14px;
+  background: var(--sage-600); border-radius: 14px;
+  text-align: center; font-size: 13px; font-weight: 700; color: var(--white);
+}
+
+/* Floating dog photos around phone */
+.hero__dog-1, .hero__dog-2 {
+  position: absolute; border-radius: 20px;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.1);
+  border: 3px solid var(--white);
+  object-fit: cover;
+}
+.hero__dog-1 { width: 140px; height: 170px; top: 20px; right: -20px; z-index: 1; animation: drift 7s ease-in-out infinite; }
+.hero__dog-2 { width: 120px; height: 150px; bottom: 40px; left: -30px; z-index: 3; animation: drift 8s ease-in-out infinite 1s; }
+
+@keyframes drift { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-10px) rotate(1deg)} }
+
+@media(max-width:900px) {
+  .hero__grid { grid-template-columns: 1fr; text-align: center; }
+  .hero__sub { margin-left: auto; margin-right: auto; }
+  .email-form { margin: 0 auto; }
+  .hero__proof { text-align: center; }
+  .hero__visual { margin-top: 40px; }
+  .hero__dog-1 { right: 10px; width: 100px; height: 120px; }
+  .hero__dog-2 { left: 10px; width: 90px; height: 110px; }
+}
+
+/* ============================================
+   MARQUEE — scrolling social proof
+   ============================================ */
+.marquee { padding: 48px 0; border-top: 1px solid rgba(0,0,0,0.04); border-bottom: 1px solid rgba(0,0,0,0.04); overflow: hidden; }
+.marquee__track { display: flex; width: max-content; animation: scroll 50s linear infinite; }
+.marquee__track:hover { animation-play-state: paused; }
+@keyframes scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.marquee__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 24px; margin: 0 6px; border-radius: 99px;
+  background: var(--white); border: 1px solid rgba(0,0,0,0.04);
+  font-size: 13px; font-weight: 500; color: var(--ink-light);
+  white-space: nowrap; flex-shrink: 0;
+}
+.marquee__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.marquee__dot--sage { background: var(--sage-400); }
+.marquee__dot--amber { background: var(--amber-500); }
+.marquee__dot--coral { background: var(--coral-500); }
+
+/* ============================================
+   THE NUMBER — big bold stat break
+   ============================================ */
+.bignum { padding: 120px 0; text-align: center; }
+.bignum__number {
+  font-family: var(--ff-display); font-weight: 700;
+  font-size: clamp(80px, 14vw, 180px); line-height: 0.9;
+  letter-spacing: -0.05em;
+  background: linear-gradient(135deg, var(--sage-600), var(--sage-400));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.bignum__label {
+  font-size: 18px; color: var(--ink-muted); margin-top: 16px;
+  max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;
+}
+
+/* ============================================
+   COMPARE — editorial split
+   ============================================ */
+.compare { padding: 100px 0; }
+.compare__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; align-items: center; }
+
+.compare__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-600); margin-bottom: 16px; }
+.compare h2 { font-family: var(--ff-display); font-size: clamp(30px, 3.5vw, 44px); font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 20px; }
+.compare__desc { font-size: 16px; line-height: 1.7; color: var(--ink-muted); }
+
+.compare__card {
+  background: var(--white); border-radius: 28px;
+  padding: 32px; border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.05);
+}
+.compare__product { display: flex; gap: 14px; align-items: center; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.04); margin-bottom: 20px; }
+.compare__product-icon { width: 52px; height: 52px; background: var(--sage-50); border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.compare__product-icon svg { width: 24px; height: 24px; color: var(--sage-600); }
+.compare__product h4 { font-size: 15px; font-weight: 700; color: var(--ink); }
+.compare__product span { font-size: 12px; color: var(--ink-faint); }
+
+.compare__row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 16px; border-radius: 12px; font-size: 14px;
+  margin-bottom: 6px;
+  opacity: 0; transform: translateX(-16px);
+  transition: all 0.5s var(--ease-out-expo);
+}
+.compare__row.show { opacity: 1; transform: none; }
+.compare__row .r-name { font-weight: 500; color: var(--ink-light); }
+.compare__row .r-price { font-weight: 700; color: var(--ink-light); }
+.compare__row--best { background: var(--sage-50); border: 1px solid var(--sage-200); }
+.compare__row--best .r-name, .compare__row--best .r-price { color: var(--sage-700); }
+.compare__badge { font-size: 10px; font-weight: 700; background: var(--sage-600); color: white; padding: 3px 10px; border-radius: 99px; margin-left: 10px; }
+
+.compare__total {
+  margin-top: 16px; padding: 16px 20px;
+  background: var(--amber-50); border-radius: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid rgba(212,160,23,0.15);
+  opacity: 0; transition: opacity 0.6s 0.6s;
+}
+.compare__total.show { opacity: 1; }
+.compare__total span { font-size: 13px; color: var(--ink-muted); }
+.compare__total strong { font-family: var(--ff-display); font-size: 20px; font-weight: 700; color: var(--amber-600); }
+
+@media(max-width:900px) {
+  .compare__grid { grid-template-columns: 1fr; gap: 40px; }
+}
+
+/* ============================================
+   HOW — 3 steps, editorial
+   ============================================ */
+.how { padding: 120px 0; background: var(--sage-50); color: var(--ink); position: relative; overflow: hidden; border-top: 1px solid rgba(0,0,0,0.04); border-bottom: 1px solid rgba(0,0,0,0.04); }
+.how::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 40%, rgba(78,122,46,0.06) 0%, transparent 60%); pointer-events: none; }
+.how .wrap { position: relative; z-index: 1; }
+.how__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-600); margin-bottom: 16px; }
+.how h2 { font-family: var(--ff-display); font-size: clamp(30px, 4vw, 46px); font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; margin-bottom: 64px; color: var(--ink); }
+.how__steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; }
+.how__step {
+  padding: 36px; border-radius: 24px;
+  background: var(--white); border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.4s var(--ease-out-expo);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.how__step:hover { background: var(--white); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
+.how__step-num {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: var(--sage-500); color: var(--white); display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; margin-bottom: 24px;
+}
+.how__step h3 { font-family: var(--ff-display); font-size: 22px; font-weight: 600; margin-bottom: 10px; color: var(--ink); }
+.how__step p { font-size: 14px; line-height: 1.7; color: var(--ink-muted); }
+
+@media(max-width:768px) { .how__steps { grid-template-columns: 1fr; } }
+
+/* ============================================
+   FEATURES — offset grid with custom icons
+   ============================================ */
+.features { padding: 120px 0; }
+.features__header { margin-bottom: 56px; }
+.features__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage-600); margin-bottom: 16px; }
+.features h2 { font-family: var(--ff-display); font-size: clamp(30px, 4vw, 44px); font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; color: var(--ink); max-width: 600px; }
+
+.features__grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+.feat {
+  padding: 36px; border-radius: 24px; background: var(--white);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: all 0.4s var(--ease-out-expo);
+  position: relative; overflow: hidden;
+}
+.feat:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.05); }
+.feat__icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+}
+.feat__icon svg { width: 22px; height: 22px; }
+.feat__icon--sage { background: var(--sage-50); color: var(--sage-600); }
+.feat__icon--coral { background: var(--coral-50); color: var(--coral-500); }
+.feat__icon--amber { background: var(--amber-50); color: var(--amber-600); }
+.feat h3 { font-family: var(--ff-display); font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.feat p { font-size: 14px; line-height: 1.7; color: var(--ink-muted); }
+
+/* Accent bar */
+.feat::after { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 48px; border-radius: 0 3px 3px 0; }
+.feat:nth-child(1)::after { background: var(--sage-400); }
+.feat:nth-child(2)::after { background: var(--coral-400); }
+.feat:nth-child(3)::after { background: var(--amber-500); }
+.feat:nth-child(4)::after { background: var(--sage-600); }
+
+@media(max-width:768px) { .features__grid { grid-template-columns: 1fr; } }
+
+/* ============================================
+   PHOTO STRIP
+   ============================================ */
+.photos { padding: 24px 0; overflow: hidden; }
+.photos__track { display: flex; gap: 16px; width: max-content; animation: scrollPhotos 35s linear infinite; }
+@keyframes scrollPhotos { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.photos__track img { width: 260px; height: 300px; object-fit: cover; border-radius: 20px; flex-shrink: 0; }
+
+/* ============================================
+   RETAILERS
+   ============================================ */
+.retailers { padding: 80px 0; text-align: center; }
+.retailers h3 { font-family: var(--ff-display); font-size: 24px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.retailers > .wrap > p { font-size: 14px; color: var(--ink-faint); margin-bottom: 32px; }
+.retailers__pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 640px; margin: 0 auto; }
+.r-pill { padding: 11px 24px; background: var(--white); border: 1px solid rgba(0,0,0,0.05); border-radius: 99px; font-size: 14px; font-weight: 500; color: var(--ink-light); transition: all 0.25s; }
+.r-pill:hover { border-color: var(--sage-300); background: var(--sage-50); transform: translateY(-2px); }
+
+/* ============================================
+   BLOG
+   ============================================ */
+.blog { padding: 100px 0; }
+.blog__header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 44px; }
+.blog h2 { font-family: var(--ff-display); font-size: clamp(28px, 3vw, 38px); font-weight: 500; letter-spacing: -0.02em; color: var(--ink); }
+.blog__header a { font-size: 14px; font-weight: 500; color: var(--sage-600); text-decoration: none; }
+
+.blog__grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+.blog-card {
+  background: var(--white); border-radius: 22px; border: 1px solid rgba(0,0,0,0.04);
+  overflow: hidden; text-decoration: none; color: inherit; display: block;
+  transition: all 0.4s var(--ease-out-expo);
+}
+.blog-card:hover { transform: translateY(-6px); box-shadow: 0 20px 52px rgba(0,0,0,0.07); }
+.blog-card img { width: 100%; height: 200px; object-fit: cover; }
+.blog-card__body { padding: 24px; }
+.blog-card__tag {
+  display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 4px 10px; border-radius: 99px; margin-bottom: 12px;
+}
+.blog-card__tag--prices { background: var(--amber-100); color: var(--amber-600); }
+.blog-card__tag--safety { background: var(--coral-100); color: var(--coral-500); }
+.blog-card__tag--nutrition { background: var(--sage-100); color: var(--sage-700); }
+.blog-card h3 { font-family: var(--ff-display); font-size: 19px; font-weight: 600; line-height: 1.3; color: var(--ink); margin-bottom: 8px; }
+.blog-card p { font-size: 13px; line-height: 1.6; color: var(--ink-faint); }
+.blog-card__meta { margin-top: 12px; font-size: 11px; color: var(--ink-ghost); }
+
+@media(max-width:768px) {
+  .blog__grid { grid-template-columns: 1fr; }
+  .blog__header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* ============================================
+   CTA — full width moment
+   ============================================ */
+.cta {
+  padding: 120px 0; text-align: center;
+  background: var(--amber-50); color: var(--ink);
+  position: relative; overflow: hidden;
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+.cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(212,160,23,0.06) 0%, transparent 60%); pointer-events: none; }
+.cta .wrap { position: relative; z-index: 1; }
+.cta h2 { font-family: var(--ff-display); font-size: clamp(36px, 5vw, 56px); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; color: var(--ink); }
+.cta h2 em { font-weight: 700; font-style: italic; color: var(--sage-500); }
+.cta > .wrap > p { font-size: 16px; color: var(--ink-muted); margin-bottom: 40px; max-width: 420px; margin-left: auto; margin-right: auto; }
+.cta .email-form { margin: 0 auto; max-width: 460px; }
+.cta .email-form input { background: var(--white); border-color: var(--ink-ghost); color: var(--ink); }
+.cta .email-form input::placeholder { color: var(--ink-ghost); }
+.cta .email-form input:focus { border-color: var(--sage-400); box-shadow: 0 0 0 4px rgba(78,122,46,0.08); }
+.cta .email-form button { background: var(--sage-600); color: var(--white); }
+.cta .email-form button:hover { background: var(--sage-700); }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer { padding: 48px 0; border-top: 1px solid rgba(0,0,0,0.04); }
+.footer__inner { display: flex; justify-content: space-between; align-items: center; }
+.footer__left { display: flex; align-items: center; gap: 28px; }
+.footer__mark { font-family: var(--ff-display); font-size: 18px; font-weight: 500; color: var(--sage-700); }
+.footer__links { display: flex; gap: 20px; list-style: none; }
+.footer__links a { font-size: 12px; color: var(--ink-faint); text-decoration: none; transition: color 0.2s; }
+.footer__links a:hover { color: var(--ink-muted); }
+.footer__right { font-size: 12px; color: var(--ink-ghost); }
+
+@media(max-width:768px) {
+  .footer__inner { flex-direction: column; gap: 16px; text-align: center; }
+  .footer__left { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="wrap nav__inner">
+    <a href="/" class="nav__mark">luca<i>.</i></a>
+    <ul class="nav__links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="#signup" class="nav__btn">Get early access</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <div class="hero__eyebrow">Launching soon</div>
+      <h1>Your dog's <em>secretary</em></h1>
+      <p class="hero__sub">You already give them the best walks, the best belly rubs, and the best spot on the couch. Luca makes sure they get the best food, treats, toys, and everything else — at the best price, every week, without you lifting a finger.</p>
+      <form class="email-form" id="hero-form" onsubmit="handleSubmit(event, this)">
+        <input type="email" placeholder="Your email" required aria-label="Email">
+        <button type="submit">Join waitlist</button>
+      </form>
+      <p class="hero__proof">Free to join. Launching Spring 2026.</p>
+    </div>
+    <div class="hero__visual">
+      <img src="images/luca-park.jpeg" alt="Luca the dog at the park" class="hero__dog-1">
+      <div class="hero__phone">
+        <div class="hero__phone-screen">
+          <div class="phone-header">Luca's cart for this week</div>
+          <div class="phone-sub">14 items · 3 retailers · saving $22.60</div>
+          <div class="phone-item"><div class="phone-item-dot s"></div><div class="phone-item-text"><div class="phone-item-name">Blue Buffalo Wilderness 24lb</div><div class="phone-item-detail">Chewy · cheapest this week</div></div><div class="phone-item-price">$48.99</div></div>
+          <div class="phone-item"><div class="phone-item-dot a"></div><div class="phone-item-text"><div class="phone-item-name">KONG Classic Dog Toy — Large</div><div class="phone-item-detail">Amazon · new find for Dwight</div></div><div class="phone-item-price">$14.99</div></div>
+          <div class="phone-item"><div class="phone-item-dot c"></div><div class="phone-item-text"><div class="phone-item-name">Nutramax Cosequin DS Plus</div><div class="phone-item-detail">Walmart · joint supplement</div></div><div class="phone-item-price">$27.99</div></div>
+          <div class="phone-item"><div class="phone-item-dot s"></div><div class="phone-item-text"><div class="phone-item-name">Burt's Bees Oatmeal Shampoo</div><div class="phone-item-detail">Target · restocking</div></div><div class="phone-item-price">$9.49</div></div>
+          <div class="phone-savings"><span>Savings this week</span><strong>$22.60</strong></div>
+          <div class="phone-btn">Approve cart</div>
+        </div>
+      </div>
+      <img src="images/dwight-couch.jpg" alt="Dwight the Cane Corso" class="hero__dog-2">
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<section class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Saved $22.60 on this week's cart</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Caught a recall on Blue Buffalo Wilderness</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>Found the same treats $11 cheaper at Chewy</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>$247 saved since joining Luca</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Luca already found a safe substitute</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>KONG toys 30% cheaper at Amazon this week</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Restocking joint supplements before you run out</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Saved $22.60 on this week's cart</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Caught a recall on Blue Buffalo Wilderness</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>Found the same treats $11 cheaper at Chewy</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>$247 saved since joining Luca</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--coral"></span>Luca already found a safe substitute</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--amber"></span>KONG toys 30% cheaper at Amazon this week</div>
+    <div class="marquee__item"><span class="marquee__dot marquee__dot--sage"></span>Restocking joint supplements before you run out</div>
+  </div>
+</section>
+
+<!-- BIG NUMBER -->
+<section class="bignum reveal">
+  <div class="wrap">
+    <div class="bignum__number">25–40%</div>
+    <div class="bignum__label">That's the price gap for the exact same product — food, treats, supplements, toys — just at different stores. Your dog doesn't care where it ships from. Your wallet does.</div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section class="compare" id="compare">
+  <div class="wrap compare__grid">
+    <div>
+      <div class="compare__label reveal">See the difference</div>
+      <h2 class="reveal">Same product.<br>Wildly different prices.</h2>
+      <p class="compare__desc reveal">Whether it's kibble, chews, shampoo, or supplements — Luca checks every retailer, every week. You always get the lowest price without lifting a finger.</p>
+    </div>
+    <div class="compare__card reveal" id="compare-card">
+      <div class="compare__product">
+        <div class="compare__product-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+        </div>
+        <div>
+          <h4>Blue Buffalo Wilderness Salmon</h4>
+          <span>Adult · Grain-Free · 24 lb</span>
+        </div>
+      </div>
+      <div id="price-rows">
+        <div class="compare__row" data-d="0"><span class="r-name">PetSmart</span><span class="r-price">$67.99</span></div>
+        <div class="compare__row" data-d="120"><span class="r-name">Amazon</span><span class="r-price">$59.98</span></div>
+        <div class="compare__row" data-d="240"><span class="r-name">Walmart</span><span class="r-price">$54.48</span></div>
+        <div class="compare__row compare__row--best" data-d="360"><span class="r-name">Chewy</span><span class="r-price">$48.99</span><span class="compare__badge">Best price</span></div>
+      </div>
+      <div class="compare__total" id="compare-total"><span>Luca picks the best price</span><strong>You save $19.00</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="how__label reveal">How it works</div>
+    <h2 class="reveal">Three steps. More time for the dog park.</h2>
+    <div class="how__steps">
+      <div class="how__step reveal"><div class="how__step-num">1</div><h3>Tell Luca about your dog</h3><p>Breed, age, weight, allergies, diet — a 2-minute quiz that powers everything. Multi-dog households welcome.</p></div>
+      <div class="how__step reveal reveal-d1"><div class="how__step-num">2</div><h3>Luca builds your cart</h3><p>Every week, Luca compares prices on food, treats, toys, supplements, and grooming supplies across 8 retailers — and drafts a cart with the best deals on everything.</p></div>
+      <div class="how__step reveal reveal-d2"><div class="how__step-num">3</div><h3>Approve and save</h3><p>Open the app, glance at the cart, remove anything you don't want, and tap approve. That's your entire job.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="features__header">
+      <div class="features__label reveal">Why Luca</div>
+      <h2 class="reveal">Everything your dog deserves.<br>Nothing you don't need.</h2>
+    </div>
+    <div class="features__grid">
+      <div class="feat reveal">
+        <div class="feat__icon feat__icon--sage"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 17l3-3h4l3 3h4l3-3h3"/><circle cx="12" cy="9" r="3"/><path d="M12 6V3"/></svg></div>
+        <h3>Cross-retailer price optimization</h3>
+        <p>Food, treats, toys, supplements, grooming supplies — Luca checks Chewy, Amazon, Walmart, Costco, PetSmart, Petco, Target, and Tractor Supply for the cheapest option on every item.</p>
+      </div>
+      <div class="feat reveal reveal-d1">
+        <div class="feat__icon feat__icon--coral"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Recall monitoring</h3>
+        <p>Luca scans the FDA database daily. If anything in your dog's cart gets recalled — food, treats, chews — it's removed and replaced before you hear about it.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat__icon feat__icon--amber"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></div>
+        <h3>Smart substitutions</h3>
+        <p>Out of stock? Recalled? Overpriced? Luca finds the closest replacement that respects your dog's allergies, preferences, and nutritional needs.</p>
+      </div>
+      <div class="feat reveal reveal-d1">
+        <div class="feat__icon feat__icon--sage"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+        <h3>Restock predictions</h3>
+        <p>Luca learns how fast your dog goes through everything — food, treats, supplements, shampoo — and adds items to your cart before you run out.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO STRIP -->
+<section class="photos" aria-hidden="true">
+  <div class="photos__track">
+    <img src="images/luca-park.jpeg" alt="" loading="lazy">
+    <img src="images/dwight-store.jpg" alt="" loading="lazy">
+    <img src="images/both-dogs.jpeg" alt="" loading="lazy">
+    <img src="images/dogs-creek.jpg" alt="" loading="lazy">
+    <img src="images/luca-closeup.jpg" alt="" loading="lazy">
+    <img src="images/dwight-park.jpeg" alt="" loading="lazy">
+    <img src="images/luca-couch-silly.jpeg" alt="" loading="lazy">
+    <img src="images/luca-park.jpeg" alt="" loading="lazy">
+    <img src="images/dwight-store.jpg" alt="" loading="lazy">
+    <img src="images/both-dogs.jpeg" alt="" loading="lazy">
+    <img src="images/dogs-creek.jpg" alt="" loading="lazy">
+    <img src="images/luca-closeup.jpg" alt="" loading="lazy">
+    <img src="images/dwight-park.jpeg" alt="" loading="lazy">
+    <img src="images/luca-couch-silly.jpeg" alt="" loading="lazy">
+  </div>
+</section>
+
+<!-- RETAILERS -->
+<section class="retailers reveal">
+  <div class="wrap">
+    <h3>8 retailers at launch</h3>
+    <p>Every price checked. Every week.</p>
+    <div class="retailers__pills">
+      <span class="r-pill">Chewy</span><span class="r-pill">Amazon</span><span class="r-pill">Walmart</span>
+      <span class="r-pill">Costco</span><span class="r-pill">PetSmart</span><span class="r-pill">Petco</span>
+      <span class="r-pill">Target</span><span class="r-pill">Tractor Supply</span>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="blog" id="blog">
+  <div class="wrap">
+    <div class="blog__header reveal">
+      <h2>From the blog</h2>
+    </div>
+    <div class="blog__grid">
+      <a href="blog/dog-food-price-comparison.html" class="blog-card reveal">
+        <img src="images/dogs-creek.jpg" alt="Dogs at creek" loading="lazy">
+        <div class="blog-card__body">
+          <span class="blog-card__tag blog-card__tag--prices">Prices</span>
+          <h3>We compared the same dog food across 6 stores. The difference is insane.</h3>
+          <p>A 24-lb bag costs anywhere from $48 to $68. Here's every price we found.</p>
+          <div class="blog-card__meta">5 min read</div>
+        </div>
+      </a>
+      <a href="blog/pet-food-recalls-2025-2026.html" class="blog-card reveal reveal-d1">
+        <img src="images/luca-closeup.jpg" alt="Luca looking at camera" loading="lazy">
+        <div class="blog-card__body">
+          <span class="blog-card__tag blog-card__tag--safety">Safety</span>
+          <h3>Every FDA pet food recall in 2025–2026: what you need to know</h3>
+          <p>Over half of all recalls are the most serious category. Here's what to watch for.</p>
+          <div class="blog-card__meta">8 min read</div>
+        </div>
+      </a>
+      <a href="blog/how-to-read-dog-food-labels.html" class="blog-card reveal reveal-d2">
+        <img src="images/dwight-store.jpg" alt="Dwight at the store" loading="lazy">
+        <div class="blog-card__body">
+          <span class="blog-card__tag blog-card__tag--nutrition">Nutrition</span>
+          <h3>How to read a dog food ingredient label in 30 seconds</h3>
+          <p>Named proteins, meal vs. fresh, guaranteed analysis — what actually matters.</p>
+          <div class="blog-card__meta">6 min read</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="signup">
+  <div class="wrap">
+    <h2 class="reveal">They give you everything.<br><em>Give them this.</em></h2>
+    <p class="reveal">Join the waitlist. Luca launches Spring 2026.</p>
+    <form class="email-form reveal" id="cta-form" onsubmit="handleSubmit(event, this)">
+      <input type="email" placeholder="Your email" required aria-label="Email">
+      <button type="submit">Join waitlist</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div class="footer__left">
+      <span class="footer__mark">luca.</span>
+      <ul class="footer__links">
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="disclosure.html">Affiliate disclosure</a></li>
+        <li><a href="terms.html">Terms</a></li>
+      </ul>
+    </div>
+    <div class="footer__right">&copy; 2026 Luca</div>
+  </div>
+</footer>
+
+<script>
+// Nav
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => nav.classList.toggle('stuck', window.scrollY > 60));
+
+// Reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); }});
+}, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// Price rows
+const cio = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.compare__row').forEach(r => {
+        setTimeout(() => r.classList.add('show'), parseInt(r.dataset.d)||0);
+      });
+      setTimeout(() => document.getElementById('compare-total').classList.add('show'), 600);
+      cio.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+const cc = document.getElementById('compare-card');
+if (cc) cio.observe(cc);
+
+// Form
+function handleSubmit(e, form) {
+  e.preventDefault();
+  const btn = form.querySelector('button');
+  const input = form.querySelector('input');
+  const email = input.value;
+  btn.textContent = '✓ You\'re in!';
+  btn.style.pointerEvents = 'none';
+  input.disabled = true; input.value = ''; input.placeholder = 'We\'ll be in touch';
+  console.log('Signup:', email);
+  setTimeout(() => {
+    btn.textContent = 'Join waitlist'; btn.style.pointerEvents = '';
+    input.disabled = false; input.placeholder = 'Your email';
+  }, 4000);
+}
+</script>
+</body>
+</html>
