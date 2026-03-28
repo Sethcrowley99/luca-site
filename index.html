@@ -724,14 +724,29 @@ function handleSubmit(e, form) {
   const btn = form.querySelector('button');
   const input = form.querySelector('input');
   const email = input.value;
-  btn.textContent = '✓ You\'re in!';
+  btn.textContent = 'Sending...';
   btn.style.pointerEvents = 'none';
-  input.disabled = true; input.value = ''; input.placeholder = 'We\'ll be in touch';
-  console.log('Signup:', email);
-  setTimeout(() => {
-    btn.textContent = 'Join waitlist'; btn.style.pointerEvents = '';
-    input.disabled = false; input.placeholder = 'Your email';
-  }, 4000);
+  input.disabled = true;
+
+  fetch('https://script.google.com/macros/s/AKfycbytOKBQEBEaOWW1C8iRt3RN4pFp9n0NMXSwmt7XQu0hPyCWRzP6AN4yGEN_XnwHm-pW/exec', {
+    method: 'POST',
+    body: JSON.stringify({ email: email }),
+    mode: 'no-cors'
+  }).then(() => {
+    btn.textContent = '\u2713 You\u0027re in!';
+    input.value = '';
+    input.placeholder = 'We\u0027ll be in touch';
+    setTimeout(() => {
+      btn.textContent = 'Join waitlist';
+      btn.style.pointerEvents = '';
+      input.disabled = false;
+      input.placeholder = 'Your email';
+    }, 4000);
+  }).catch(() => {
+    btn.textContent = 'Try again';
+    btn.style.pointerEvents = '';
+    input.disabled = false;
+  });
 }
 </script>
 </body>
