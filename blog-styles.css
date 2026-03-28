@@ -28,8 +28,8 @@
   --warm-700: #3E3B34;
   --warm-800: #2A2822;
   --warm-900: #1A1815;
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'Instrument Sans', -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Nunito Sans', -apple-system, sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
