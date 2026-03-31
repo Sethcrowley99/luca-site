@@ -46,13 +46,13 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 
 /* Floating dog faces container */
 .dogs-float{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.dog-face{position:absolute;object-fit:contain;will-change:transform;filter:drop-shadow(0 8px 20px rgba(0,0,0,.25))}
+.dog-face{position:absolute;object-fit:contain;will-change:transform;transition:transform .12s ease-out}
 
 .hero-content{position:relative;z-index:10}
 .hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:28px;opacity:0;animation:fadeIn .8s .3s var(--ease) forwards}
 @keyframes fadeIn{to{opacity:1}}
 .hero h1{font-family:var(--display);font-weight:800;font-size:clamp(52px,9vw,110px);line-height:.92;letter-spacing:-.04em;color:#fff;opacity:0;animation:heroUp 1s .4s var(--ease) forwards}
-.hero h1 em{font-style:italic;color:#D4943F}
+.hero h1 em{font-style:italic;color:#F5F0E6}
 .hero-p{font-size:clamp(16px,2vw,20px);line-height:1.6;color:rgba(255,255,255,.65);max-width:500px;margin:24px auto 0;opacity:0;animation:heroUp 1s .6s var(--ease) forwards}
 @keyframes heroUp{to{opacity:1;transform:translateY(0)}}.hero h1,.hero-p{transform:translateY(30px)}
 
@@ -178,7 +178,7 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 /* ========== CTA ========== */
 .cta{padding:clamp(100px,14vw,180px) 24px;text-align:center;background:var(--sage-rich);color:#fff;position:relative;overflow:hidden}
 .cta h2{font-family:var(--display);font-size:clamp(36px,6vw,64px);font-weight:800;line-height:1;letter-spacing:-.04em;margin-bottom:16px}
-.cta h2 em{font-style:italic;color:#D4943F}
+.cta h2 em{font-style:italic;color:#F5F0E6}
 .cta>p{font-size:16px;color:rgba(255,255,255,.55);margin-bottom:36px}
 .cta .hero-form{margin:0 auto}
 
@@ -350,29 +350,26 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 </footer>
 
 <script>
-// ===== DOG FACE PNGs + ORGANIC DRIFT =====
+// ===== DOG FACE PNGs + PARALLAX =====
 const dogImages = ['images/dog-golden.png','images/dog-corso.png','images/dog-corgi.png','images/dog-shepherd.png'];
 
-const dogPositions = [
-  {x:6, y:10, size:105, depth:0.3},
-  {x:82, y:6, size:90, depth:0.5},
-  {x:12, y:52, size:72, depth:0.7},
-  {x:76, y:48, size:95, depth:0.35},
-  {x:42, y:6, size:60, depth:0.85},
-  {x:90, y:72, size:80, depth:0.45},
-  {x:3, y:78, size:65, depth:0.7},
-  {x:52, y:76, size:88, depth:0.4},
-  {x:32, y:28, size:50, depth:0.95},
-  {x:65, y:22, size:55, depth:0.9},
-  {x:22, y:68, size:48, depth:1.0},
-  {x:48, y:42, size:42, depth:1.0},
+const dogLayout = [
+  {x:4,y:8,size:100,depth:0.25},
+  {x:84,y:5,size:85,depth:0.45},
+  {x:8,y:72,size:75,depth:0.6},
+  {x:88,y:68,size:90,depth:0.35},
+  {x:2,y:38,size:60,depth:0.75},
+  {x:92,y:35,size:55,depth:0.8},
+  {x:78,y:85,size:50,depth:0.9},
+  {x:18,y:88,size:48,depth:0.95},
+  {x:70,y:12,size:45,depth:0.85},
+  {x:30,y:5,size:42,depth:0.9},
 ];
 
-function spawnDriftDogs(containerId, positions) {
+function createParallaxDogs(containerId, positions) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  const drifters = [];
-  
+  const items = [];
   positions.forEach((d, i) => {
     const img = document.createElement('img');
     img.className = 'dog-face';
@@ -382,59 +379,47 @@ function spawnDriftDogs(containerId, positions) {
     img.style.height = d.size + 'px';
     img.style.left = d.x + '%';
     img.style.top = d.y + '%';
-    img.style.opacity = 0.95 - (d.depth * 0.25);
-    // 3D depth: further dogs get slight blur
-    if (d.depth > 0.7) img.style.filter = 'drop-shadow(0 6px 16px rgba(0,0,0,.2)) blur(0.8px)';
-    else if (d.depth > 0.5) img.style.filter = 'drop-shadow(0 10px 24px rgba(0,0,0,.25)) blur(0.3px)';
-    else img.style.filter = 'drop-shadow(0 14px 32px rgba(0,0,0,.3))';
+    img.style.opacity = 0.92 - (d.depth * 0.2);
+    img.style.zIndex = Math.round((1 - d.depth) * 5);
+    if (d.depth > 0.7) img.style.filter = 'drop-shadow(0 6px 14px rgba(0,0,0,.18)) blur(0.7px)';
+    else if (d.depth > 0.45) img.style.filter = 'drop-shadow(0 10px 22px rgba(0,0,0,.22)) blur(0.3px)';
+    else img.style.filter = 'drop-shadow(0 16px 36px rgba(0,0,0,.28))';
     container.appendChild(img);
-
-    drifters.push({
-      el: img,
-      driftXSpeed: 0.00025 + Math.random() * 0.0005,
-      driftYSpeed: 0.0003 + Math.random() * 0.00045,
-      driftXRange: 12 + Math.random() * 22,
-      driftYRange: 8 + Math.random() * 18,
-      phaseX: Math.random() * Math.PI * 2,
-      phaseY: Math.random() * Math.PI * 2,
-      rotSpeed: 0.00015 + Math.random() * 0.0003,
-      rotRange: 4 + Math.random() * 8,
-      rotPhase: Math.random() * Math.PI * 2,
-      scaleSpeed: 0.00025 + Math.random() * 0.00025,
-      scaleRange: 0.025 + Math.random() * 0.035,
-      scalePhase: Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.0008 + Math.random() * 0.0008,
-      wobbleRange: 3 + Math.random() * 5,
-      wobblePhase: Math.random() * Math.PI * 2,
-      depth: d.depth,
-    });
+    items.push({el:img, depth:d.depth});
   });
-  return drifters;
+  return items;
 }
 
-const heroDrifters = spawnDriftDogs('dogs-float', dogPositions);
-const ctaDrifters = spawnDriftDogs('dogs-float-cta', dogPositions.slice(0, 8));
+const heroItems = createParallaxDogs('dogs-float', dogLayout);
+const ctaItems = createParallaxDogs('dogs-float-cta', dogLayout.slice(0,6));
 
-let t = 0;
-function animateDrift() {
-  t += 16;
-  const all = (heroDrifters || []).concat(ctaDrifters || []);
-  all.forEach(d => {
-    const driftX = Math.sin(t * d.driftXSpeed + d.phaseX) * d.driftXRange;
-    const driftY = Math.cos(t * d.driftYSpeed + d.phaseY) * d.driftYRange;
-    const wobbleX = Math.sin(t * d.wobbleSpeed + d.wobblePhase) * d.wobbleRange;
-    const wobbleY = Math.cos(t * d.wobbleSpeed * 0.8 + d.wobblePhase) * d.wobbleRange * 0.7;
-    const rot = Math.sin(t * d.rotSpeed + d.rotPhase) * d.rotRange;
-    const scale = 1 + Math.sin(t * d.scaleSpeed + d.scalePhase) * d.scaleRange;
-    d.el.style.transform = 'translate(' + (driftX + wobbleX) + 'px,' + (driftY + wobbleY) + 'px) rotate(' + rot + 'deg) scale(' + scale + ')';
+let mx=0.5, my=0.5, cx=0.5, cy=0.5;
+const heroEl = document.getElementById('hero-section');
+if (heroEl) {
+  heroEl.addEventListener('mousemove', function(e) {
+    mx = e.clientX / window.innerWidth;
+    my = e.clientY / window.innerHeight;
   });
-  requestAnimationFrame(animateDrift);
 }
-animateDrift();
+
+function animateParallax() {
+  cx += (mx - cx) * 0.04;
+  cy += (my - cy) * 0.04;
+  const all = (heroItems||[]).concat(ctaItems||[]);
+  all.forEach(function(d) {
+    var moveX = (cx - 0.5) * d.depth * -70;
+    var moveY = (cy - 0.5) * d.depth * -70;
+    var rot = (cx - 0.5) * d.depth * 6;
+    var sc = 1 + (cy - 0.5) * d.depth * 0.04;
+    d.el.style.transform = 'translate(' + moveX + 'px,' + moveY + 'px) rotate(' + rot + 'deg) scale(' + sc + ')';
+  });
+  requestAnimationFrame(animateParallax);
+}
+animateParallax();
 
 // Playful divider mini dogs
 const pdContainer = document.getElementById('pd-dogs');
-dogImages.forEach(src => { const img = document.createElement('img'); img.src = src; img.style.width = '56px'; img.style.height = '56px'; img.alt = ''; pdContainer.appendChild(img); });
+dogImages.forEach(function(src) { var img = document.createElement('img'); img.src = src; img.style.width = '56px'; img.style.height = '56px'; img.alt = ''; pdContainer.appendChild(img); });
 
 // Nav state
 const nav = document.getElementById('nav');
